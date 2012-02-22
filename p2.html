@@ -1,0 +1,153 @@
+<html>
+<head>
+	<title>Backgrounds HTML5 demo by D-Bug and Rozboris</title>
+	<script type="text/javascript" src="jquery.js"></script> 
+	<meta name="viewport" content="width=640 height=960 user-scalable=no">
+	<meta name="apple-mobile-web-app-capable" content="yes"/>
+</head>
+
+<body style="margin:0; padding:0;">
+<script type="application/x-javascript"> addEventListener("load", function() { setTimeout(
+hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
+
+<script type="text/javascript">
+
+function shuffle(array) {
+    var tmp, current, top = array.length;
+
+    if(top) while(--top) {
+        current = Math.floor(Math.random() * (top + 1));
+        tmp = array[current];
+        array[current] = array[top];
+        array[top] = tmp;
+    }
+
+    return array;
+}
+
+function generateImage()
+{
+	$("div#status").css('opacity', '1.0');
+	$("div#status").text('Working...');
+	$("div#save").css('display', 'none');
+	$("div#save").text('Tap me to save an image');
+	$("canvas").remove();
+
+	var paper = new Image();
+	paper.src = "paper.png";
+
+	var width = 640 //* 2;
+	var height = 960 //* 2
+	var canvas = document.createElement("canvas");
+	canvas.setAttribute('width', width);
+	canvas.setAttribute('height', height);
+
+	var context = canvas.getContext("2d");
+
+	function generate_wave(count, pixels)
+	{
+		area = new Array();
+		y = 0;
+		for (i = 0; i < count; i++)
+		{
+			y += Math.random() * 20 + 50
+			w = Math.random() * 20 + 30
+			o = Math.random() * 30
+			a = Math.random() * 20 + 10
+
+			q = new Array();
+			for (x = 0; x < pixels; x++)
+				q[x] = y + a * Math.sin( (x + o) / w );
+			
+			area.push(q);
+		}
+		return area;
+	}
+
+	area_x = generate_wave(60, height);
+	area_y = generate_wave(60, width);
+
+	function getarea(x, y){
+		j = 0;
+		while (area_y[j][x] < y)
+			j++;
+		i = 0;
+		while (area_x[i][y] < x)
+			i++;
+		return i + 2 * j;
+	}
+
+	function toRGB(h)
+	{
+		c = parseInt(h.replace('#', ''), 16);
+		return new Array( c >> 16, (c >> 8) % 256, c % 256 );
+	}
+
+	palette = new Array(toRGB("#229396"), toRGB("#8BA88F"), toRGB("#C7C5A8"), toRGB("#F0DFD0"), toRGB("#F23C3C"));
+	
+	function getcolor(x, y)
+	{
+		return palette[getarea(x, y) % palette.length];
+	}
+
+	var imageData = context.createImageData(width, height);
+
+	for (x = 0; x < width; x++)
+	{
+		for (y = 0; y < height; y++)
+		{
+			var index = 4 * (y * width + x);
+			
+			rgb = getcolor(x, y);
+			
+			imageData.data[index]     = rgb[0];
+			imageData.data[index + 1] = rgb[1];
+			imageData.data[index + 2] = rgb[2];
+			imageData.data[index + 3] = 255;
+		}
+		if (x % 10 == 0) context.putImageData(imageData, 0, 0);
+	}
+	// var temp_canvas = $("<canvas>")
+	// 	.attr("width", imageData.width)
+	//     .attr("height", imageData.height)[0];
+	// temp_canvas.getContext("2d").putImageData(imageData, 0, 0);	
+
+	//context.scale(0.5, 0.5);
+	// context.drawImage(temp_canvas, 0, 0);
+	// context.scale(2, 2);
+	
+	context.putImageData(imageData, 0, 0);
+
+	paper.onload = function()
+	{
+		context.globalAlpha = 0.4;
+		context.drawImage(paper, 0, 0);
+		$("body").append(canvas)
+		// var image = canvas.toDataURL("image/png");
+		// $(canvas).remove();
+		// $("body img").remove();
+		// $("body").append('<img src="' + image + '"/>');
+		$("div#status").animate({opacity: 0.3}, 500);
+		$("div#save").css('display', 'block');
+		$("div#save").css('opacity', '0.3');
+		$("div#status").text('Tap me to get new awesome background');
+	};
+};
+
+function saveImage(){
+	canvas = $("canvas");
+	var image = canvas[0].toDataURL("image/png");
+	$("canvas").remove();
+	$("body img").remove();
+	$("body").append('<img src="' + image + '"/>');
+	$("div#save").text('Now touch and hold center of the screen');
+}
+</script>
+<div id="status" style="position: absolute; width:640px; height:100px; background-color:#ccc; color:black; font-size: 30pt; font-family: Helvetica; text-align:center;" onClick="generateImage();">
+Tap me to get an awesome background
+</div>
+<div id="save" style="display:none; position: absolute; bottom:128px; width:640px; height:100px; background-color:#ccc; color:black; font-size: 30pt; font-family: Helvetica; text-align:center;" onClick="saveImage();">
+Tap me to save an image
+</div>
+</body>
+</html>
